@@ -1,0 +1,20 @@
+[build]
+  command = "npm install && cd frontend-react && npm run build"
+  publish = "frontend-react/dist"
+
+[dev]
+  command = "npm start"
+  port = 3000
+
+# Redirect API calls to backend
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+  force = false
+
+# SPA routing fallback
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
