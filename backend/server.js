@@ -41,7 +41,32 @@ app.get('/api/stats', auth, authorize(['ADMIN']), async (req, res) => {
   }
 });
 
+// Database initialization endpoint
+app.post('/api/init', async (req, res) => {
+  try {
+    if (dbInitialized) {
+      return res.json({ message: 'Database already initialized', status: 'ok' });
+    }
+
+    // Attempt to sync database
+    await sequelize.sync({ alter: true });
+    
+    // Run seed data
+    await seedData();
+    
+    dbInitialized = true;
+    console.log('Database initialized successfully');
+    res.json({ message: 'Database initialized successfully', status: 'success' });
+  } catch (error) {
+    console.error('Database initialization failed:', error);
+    res.status(500).json({ message: 'Database initialization failed', error: error.message });
+  }
+});
+
 const PORT = process.env.PORT || 5000;
+
+// Database initialization flag
+let dbInitialized = false;
 
 const seedData = async () => {
   const adminExists = await User.findOne({ where: { username: 'admin' } });
@@ -122,6 +147,8 @@ const seedData = async () => {
 
 sequelize.sync({ alter: true }).then(async () => {
   await seedData();
+  dbInitialized = true;
+  console.log('Database initialized on startup');
   
   // For local development
   if (process.env.NODE_ENV !== 'production') {
@@ -130,7 +157,8 @@ sequelize.sync({ alter: true }).then(async () => {
     });
   }
 }).catch(err => {
-  console.error('Unable to connect to the database:', err);
+  console.error('Database initialization on startup failed:', err);
+  // Don't crash - Vercel will use the /api/init endpoint instead
 });
 
 // Export for Vercel

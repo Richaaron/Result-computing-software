@@ -53,6 +53,19 @@ const PrivateRoute = ({ children, roles }) => {
 function App() {
   const [settingsLoading, setSettingsLoading] = useState(true);
 
+  // Initialize database on app load
+  useEffect(() => {
+    const initDB = async () => {
+      try {
+        const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+        await fetch(`${baseURL.replace('/api', '')}/api/init`, { method: 'POST' });
+      } catch (error) {
+        console.warn('Database initialization check failed (may be normal):', error);
+      }
+    };
+    initDB();
+  }, []);
+
   useEffect(() => {
     const applySettings = async () => {
       try {
