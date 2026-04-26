@@ -8,9 +8,24 @@ const { auth } = require("../middleware/auth");
 router.post("/login", async (req, res) => {
   try {
     const { username, password } = req.body;
+    console.log(`[Login] Attempting login for username: ${username}`);
+    
     const user = await User.findOne({ where: { username } });
-
-    if (!user || !(await bcrypt.compare(password, user.password))) {
+    
+    if (!user) {
+      console.log(`[Login] User not found: ${username}`);
+      return res.status(401).send({ error: "Invalid login credentials" });
+    }
+    
+    console.log(`[Login] User found: ${username}, role: ${user.role}`);
+    console.log(`[Login] Stored password hash: ${user.password.substring(0, 20)}...`);
+    console.log(`[Login] Comparing with password: ${password}`);
+    
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    console.log(`[Login] Password match result: ${passwordMatch}`);
+    
+    if (!passwordMatch) {
+      console.log(`[Login] Password mismatch for user: ${username}`);
       return res.status(401).send({ error: "Invalid login credentials" });
     }
 
