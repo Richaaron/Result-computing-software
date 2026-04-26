@@ -1,5 +1,5 @@
 [build]
-  command = "cd frontend-react && npm install --verbose && npx -y vite build && cd .."
+  command = "npm install && npm --prefix frontend-react install && npm run build"
   publish = "frontend-react/dist"
   functions = "netlify/functions"
 
