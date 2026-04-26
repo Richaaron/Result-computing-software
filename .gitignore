@@ -24,3 +24,6 @@ __pycache__
 *.pyc
 .next
 .github
+
+# Stakpak session files
+.stakpak/session*
