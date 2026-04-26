@@ -1,5 +1,5 @@
 [build]
-  command = "npm install --legacy-peer-deps && npm --prefix backend install --legacy-peer-deps && npm --prefix frontend-react install --legacy-peer-deps && npm --prefix frontend-react run build"
+  command = "bash build.sh"
   publish = "frontend-react/dist"
   functions = "netlify/functions"
 
