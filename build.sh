@@ -2,15 +2,15 @@
 set -e
 
 echo "Installing root dependencies..."
-npm install --legacy-peer-deps
+npm ci
 
 echo "Installing backend dependencies..."
-cd backend && npm install --legacy-peer-deps && cd ..
+cd backend && npm ci && cd ..
 
 echo "Installing frontend dependencies..."
-cd frontend-react && npm install --legacy-peer-deps && cd ..
+cd frontend-react && npm ci && cd ..
 
 echo "Building frontend..."
-cd frontend-react && npx vite build && cd ..
+cd frontend-react && npm run build && cd ..
 
 echo "Build complete!"
