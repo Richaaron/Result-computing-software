@@ -188,6 +188,10 @@ const seedData = async () => {
     await Subject.bulkCreate(subjects);
     console.log('Seed: Nigerian curriculum subjects added.');
   }
+  } catch (error) {
+    console.error('Seed data error:', error);
+    throw error;
+  }
 };
 
 sequelize.sync({ alter: true }).then(async () => {
