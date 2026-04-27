@@ -29,6 +29,11 @@ router.post("/login", async (req, res) => {
       return res.status(401).send({ error: "Invalid login credentials" });
     }
 
+    if (!process.env.JWT_SECRET) {
+      console.error('[Login] JWT_SECRET is not set!');
+      return res.status(500).send({ error: "Server configuration error: JWT_SECRET not set" });
+    }
+
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
       expiresIn: "8h",
     });
@@ -48,7 +53,8 @@ router.post("/login", async (req, res) => {
       token,
     });
   } catch (error) {
-    res.status(400).send(error);
+    console.error('[Login] Error during login:', error.message);
+    res.status(400).send({ error: error.message || "Login failed" });
   }
 });
 
