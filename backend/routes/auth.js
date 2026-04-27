@@ -128,4 +128,27 @@ router.get("/profile", auth, async (req, res) => {
   }
 });
 
+// Reset default passwords (for setup/troubleshooting)
+router.post("/reset-default-passwords", async (req, res) => {
+  try {
+    const hashedAdminPassword = await bcrypt.hash('admin123', 8);
+    const adminUser = await User.findOne({ where: { username: 'admin' } });
+    if (adminUser) {
+      await adminUser.update({ password: hashedAdminPassword });
+      console.log('[Reset] Admin password updated to admin123');
+    }
+
+    const hashedTeacherPassword = await bcrypt.hash('teacher123', 8);
+    const teacherUser = await User.findOne({ where: { username: 'teacher' } });
+    if (teacherUser) {
+      await teacherUser.update({ password: hashedTeacherPassword });
+      console.log('[Reset] Teacher password updated to teacher123');
+    }
+
+    res.json({ message: 'Passwords reset successfully', admin: 'admin123', teacher: 'teacher123' });
+  } catch (error) {
+    res.status(500).send({ error: error.message });
+  }
+});
+
 module.exports = router;
