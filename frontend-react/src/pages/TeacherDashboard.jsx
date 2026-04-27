@@ -266,69 +266,6 @@ const TeacherDashboard = () => {
       </div>
     </div>
   );
-
-      <div ref={scrollRef} className="flex-1 overflow-y-auto p-10">
-        <header className="flex justify-between items-center mb-10">
-          <div>
-            <h1 className="text-4xl font-black text-white tracking-tighter uppercase italic underline decoration-4 decoration-accent-gold text-3d-lg">
-              Hello, Teacher {user?.fullName?.split(" ")[0]}! 🍎
-            </h1>
-            <p className="text-slate-400 mt-2 font-bold text-lg">
-              Ready to inspire some young minds today?
-            </p>
-          </div>
-          <div className="flex items-center gap-6">
-            <div className="text-right">
-              <p className="text-xl font-black text-white uppercase tracking-tighter text-3d">
-                {user?.fullName}
-              </p>
-              <p className="text-sm font-bold text-accent-red uppercase tracking-widest italic">
-                Master Educator
-              </p>
-            </div>
-            <div className="w-16 h-16 bg-slate-800 border-4 border-black rounded-3xl flex items-center justify-center font-black text-2xl shadow-cartoon transform -rotate-3 text-white overflow-hidden">
-              {user?.profileImage ? (
-                <img
-                  src={user.profileImage}
-                  alt="Profile"
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                user?.fullName?.charAt(0)
-              )}
-            </div>
-          </div>
-        </header>
-
-        <main className="max-w-6xl">
-          <Routes>
-            <Route path="/" element={<TeacherOverview user={user} />} />
-            {user?.isFormTeacher && (
-              <>
-                <Route path="/register-student" element={<RegisterStudent />} />
-                <Route
-                  path="/attendance"
-                  element={<AttendanceManager user={user} />}
-                />
-              </>
-            )}
-            <Route
-              path="/record-results"
-              element={<RecordResults user={user} />}
-            />
-            <Route
-              path="/release-results"
-              element={<ResultReleaseManager user={user} />}
-            />
-            <Route
-              path="/settings"
-              element={<TeacherSettings user={user} setUser={setUser} />}
-            />
-          </Routes>
-        </main>
-      </div>
-    </div>
-  );
 };
 
 const TeacherOverview = ({ user }) => {
