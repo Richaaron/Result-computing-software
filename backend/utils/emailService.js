@@ -41,6 +41,9 @@ async function sendEmail(to, subject, html, text = null) {
  */
 async function sendWelcomeEmail(to, userName, tempPassword, username) {
   const subject = 'Welcome to Result Management System - Your Login Credentials';
+  const portalUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+  const loginUrl = `${portalUrl}/login`;
+  
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <h2 style="color: #333;">Welcome to Result Management System</h2>
@@ -50,6 +53,12 @@ async function sendWelcomeEmail(to, userName, tempPassword, username) {
       <div style="background-color: #f0f0f0; padding: 15px; margin: 20px 0; border-radius: 5px;">
         <p><strong>Username:</strong> ${username}</p>
         <p><strong>Temporary Password:</strong> ${tempPassword}</p>
+      </div>
+      
+      <div style="text-align: center; margin: 30px 0;">
+        <a href="${loginUrl}" style="background-color: #2196F3; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+          Access Portal
+        </a>
       </div>
       
       <p style="color: #d32f2f;"><strong>Important:</strong> Please change your password immediately after logging in.</p>
