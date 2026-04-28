@@ -24,10 +24,12 @@ router.post("/register", auth, authorize(["ADMIN"]), async (req, res) => {
       ? assignedSubject.join(", ")
       : assignedSubject;
 
-    // Generate username with @folusho.com domain
-    const baseUsername = fullName.toLowerCase().replace(/\s+/g, "");
-    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-    const username = `${baseUsername}${randomSuffix}@folusho.com`;
+    // Generate short, simple username
+    const nameParts = fullName.trim().split(/\s+/);
+    const firstName = nameParts[0].toLowerCase();
+    const lastInitial = nameParts[nameParts.length - 1].charAt(0).toLowerCase();
+    const randomSuffix = Math.floor(10 + Math.random() * 90);
+    const username = `${firstName}${lastInitial}${randomSuffix}`;
 
     // Generate password with fvs@ prefix + random numbers
     const randomNumbers = Math.floor(10000 + Math.random() * 90000);
@@ -50,7 +52,7 @@ router.post("/register", auth, authorize(["ADMIN"]), async (req, res) => {
     // Send welcome email if email is provided and notifications are enabled
     if (email && process.env.EMAIL_USER && process.env.EMAIL_PASSWORD) {
       try {
-        await sendWelcomeEmail(email, fullName, password);
+        await sendWelcomeEmail(email, fullName, password, username);
         logger.info(`Welcome email sent to teacher: ${email}`);
       } catch (emailError) {
         logger.warn(`Failed to send welcome email to ${email}: ${emailError.message}`);

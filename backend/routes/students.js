@@ -13,12 +13,16 @@ const { sendWelcomeEmail } = require('../utils/emailService');
 
 // Create student with auto-generated parent account
 router.post('/', auth, authorize(['ADMIN', 'TEACHER']), validate(schemas.createStudent), asyncHandler(async (req, res) => {
-  const { firstName, lastName, registrationNumber, studentClass, subjectIds, profileImage, parentEmail } = req.body;
+  const { firstName, lastName, studentClass, subjectIds, profileImage, parentEmail } = req.body;
 
-  // Check if student already exists
+  // Auto-generate registration number with fvs + random 4-digit number
+  const randomNumber = Math.floor(1000 + Math.random() * 9000);
+  const registrationNumber = `fvs${randomNumber}`;
+
+  // Check if student already exists (unlikely but safeguard)
   const existing = await Student.findOne({ where: { registrationNumber } });
   if (existing) {
-    return res.status(409).json({ error: 'Student with this registration number already exists' });
+    return res.status(409).json({ error: 'Failed to generate unique registration number, please try again' });
   }
 
   // Generate secure password for parent
@@ -49,7 +53,7 @@ router.post('/', auth, authorize(['ADMIN', 'TEACHER']), validate(schemas.createS
   // Send welcome email to parent if email is provided and notifications are enabled
   if (parentEmail && process.env.EMAIL_USER && process.env.EMAIL_PASSWORD) {
     try {
-      await sendWelcomeEmail(parentEmail, `Parent of ${firstName} ${lastName}`, parentPassword);
+      await sendWelcomeEmail(parentEmail, `Parent of ${firstName} ${lastName}`, parentPassword, `parent_${registrationNumber}`);
       logger.info(`Welcome email sent to parent: ${parentEmail}`);
     } catch (emailError) {
       logger.warn(`Failed to send welcome email to parent ${parentEmail}: ${emailError.message}`);

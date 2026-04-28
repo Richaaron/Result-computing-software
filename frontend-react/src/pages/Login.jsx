@@ -183,7 +183,7 @@ const Login = () => {
           disabled={loading}
           className="w-full btn-primary text-base md:text-lg mt-6 disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          {loading ? "Logging in..." : "Sign In"}
+          {loading ? "Accessing..." : "Access portal"}
         </button>
       </form>
     </div>

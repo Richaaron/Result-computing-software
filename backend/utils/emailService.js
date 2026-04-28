@@ -39,8 +39,8 @@ async function sendEmail(to, subject, html, text = null) {
 /**
  * Send welcome email to new user
  */
-async function sendWelcomeEmail(to, userName, tempPassword) {
-  const subject = 'Welcome to Result Management System';
+async function sendWelcomeEmail(to, userName, tempPassword, username) {
+  const subject = 'Welcome to Result Management System - Your Login Credentials';
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
       <h2 style="color: #333;">Welcome to Result Management System</h2>
@@ -48,7 +48,7 @@ async function sendWelcomeEmail(to, userName, tempPassword) {
       <p>Your account has been created successfully. You can now log in using your credentials:</p>
       
       <div style="background-color: #f0f0f0; padding: 15px; margin: 20px 0; border-radius: 5px;">
-        <p><strong>Email:</strong> ${to}</p>
+        <p><strong>Username:</strong> ${username}</p>
         <p><strong>Temporary Password:</strong> ${tempPassword}</p>
       </div>
       
