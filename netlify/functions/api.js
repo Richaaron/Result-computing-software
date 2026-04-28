@@ -50,39 +50,56 @@ const handler = serverless(app, {
 });
 
 exports.handler = async (event, context) => {
-  // Check if this is actually an API request
-  const path = event.rawPath || event.path || '';
+  // Get the actual request path
+  let requestPath = event.rawPath || event.path || event.requestContext?.path || '';
   
-  // Log the request for debugging
-  console.log(`Function called: path="${path}", method="${event.httpMethod}"`);
+  // Remove query string and hash
+  if (requestPath.includes('?')) {
+    requestPath = requestPath.split('?')[0];
+  }
   
-  // Only process /api/* routes
-  if (!path.startsWith('/api/') && path !== '/api') {
-    console.log(`Path does not start with /api/, passing through. Path: ${path}`);
-    // Return a response that won't interfere with Netlify redirects
-    // Returning an error might cause Netlify to try other routes
+  const method = event.httpMethod || 'GET';
+  
+  console.log(`[netlify-function] ${method} ${requestPath}`);
+  
+  // CRITICAL: Only invoke Express for /api/* requests
+  // Everything else must return 404 to allow Netlify to serve static files
+  const isApiPath = requestPath === '/api' || requestPath.startsWith('/api/');
+  
+  if (!isApiPath) {
+    console.log(`[netlify-function] NOT an API path, returning 404 to allow static file serving`);
     return {
       statusCode: 404,
-      headers: {
-        'Content-Type': 'text/plain'
-      },
+      headers: { 'Content-Type': 'text/plain' },
       body: 'Not Found'
     };
   }
 
-  // If this is an OPTIONS request, handle CORS
-  if (event.httpMethod === 'OPTIONS') {
+  // Handle CORS preflight for API requests
+  if (method === 'OPTIONS') {
+    console.log(`[netlify-function] OPTIONS request, handling CORS`);
     return {
       statusCode: 200,
       headers: {
         'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type,Authorization'
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization'
       }
     };
   }
   
-  // Call the serverless handler for API routes
-  console.log(`Processing API request: ${path}`);
-  return handler(event, context);
+  // Process API request through Express
+  console.log(`[netlify-function] Processing API request: ${method} ${requestPath}`);
+  try {
+    const result = await handler(event, context);
+    console.log(`[netlify-function] API response status: ${result.statusCode}`);
+    return result;
+  } catch (error) {
+    console.error(`[netlify-function] Error processing request:`, error);
+    return {
+      statusCode: 500,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ error: 'Internal Server Error', message: error.message })
+    };
+  }
 };
