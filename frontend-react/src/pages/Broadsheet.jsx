@@ -495,7 +495,7 @@ const Broadsheet = () => {
                           Pos
                         </th>
                       </React.Fragment>
-                    )))
+                    ))}
                     <th
                       className="p-4 text-center font-black uppercase tracking-widest text-xs border-r-2 border-black/10"
                       style={{
