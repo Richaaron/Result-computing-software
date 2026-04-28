@@ -66,12 +66,6 @@
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
-# Enable compression
-[[headers]]
-  for = "/*"
-  [headers.values]
-    Content-Encoding = "gzip, br"
-
 # Security headers
 [[headers]]
   for = "/*"
