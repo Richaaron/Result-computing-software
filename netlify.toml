@@ -22,6 +22,12 @@
 # - EMAIL_USER (Gmail for notifications)
 # - EMAIL_PASSWORD (Gmail App Password)
 
+# Explicit static file serving rules
+[[redirects]]
+  from = "/"
+  to = "/index.html"
+  status = 200
+
 # Route API calls to serverless function - MUST BE FIRST (more specific)
 [[redirects]]
   from = "/api/*"
@@ -39,15 +45,12 @@
 # GET /.netlify/functions/api/health
 # GET /.netlify/functions/api/health/detailed
 
-# Security headers
+# Disable caching for root and SPA routes
 [[headers]]
-  for = "/*"
+  for = "/"
   [headers.values]
-    X-Content-Type-Options = "nosniff"
-    X-Frame-Options = "SAMEORIGIN"
-    X-XSS-Protection = "1; mode=block"
-    Referrer-Policy = "strict-origin-when-cross-origin"
-    Permissions-Policy = "geolocation=(), microphone=(), camera=()"
+    Cache-Control = "public, max-age=0, must-revalidate"
+    Pragma = "no-cache"
 
 # Disable caching for API calls
 [[headers]]
@@ -68,5 +71,15 @@
   for = "/*"
   [headers.values]
     Content-Encoding = "gzip, br"
+
+# Security headers
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "SAMEORIGIN"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(), microphone=(), camera=()"
 
 
