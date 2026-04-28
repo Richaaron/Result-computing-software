@@ -50,6 +50,26 @@ const handler = serverless(app, {
 });
 
 exports.handler = async (event, context) => {
+  // Check if this is actually an API request
+  const path = event.rawPath || event.path || '';
+  
+  // Log the request for debugging
+  console.log(`Function called: path="${path}", method="${event.httpMethod}"`);
+  
+  // Only process /api/* routes
+  if (!path.startsWith('/api/') && path !== '/api') {
+    console.log(`Path does not start with /api/, passing through. Path: ${path}`);
+    // Return a response that won't interfere with Netlify redirects
+    // Returning an error might cause Netlify to try other routes
+    return {
+      statusCode: 404,
+      headers: {
+        'Content-Type': 'text/plain'
+      },
+      body: 'Not Found'
+    };
+  }
+
   // If this is an OPTIONS request, handle CORS
   if (event.httpMethod === 'OPTIONS') {
     return {
@@ -62,6 +82,7 @@ exports.handler = async (event, context) => {
     };
   }
   
-  // Call the serverless handler
+  // Call the serverless handler for API routes
+  console.log(`Processing API request: ${path}`);
   return handler(event, context);
 };
