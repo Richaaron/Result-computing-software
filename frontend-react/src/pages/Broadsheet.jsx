@@ -178,6 +178,36 @@ const Broadsheet = () => {
     return result ? result.grade : "";
   };
 
+  const getResultDetails = (student, subjectId) => {
+    const result = student.Results.find((r) => r.SubjectId === subjectId);
+    return result
+      ? {
+          ca1: result.ca1Score || 0,
+          ca2: result.ca2Score || 0,
+          exam: result.examScore || 0,
+          total: result.totalScore || 0,
+          average: result.averageScore || 0,
+        }
+      : null;
+  };
+
+  const getSubjectPositions = (subjectId) => {
+    // Calculate position for each student in this subject
+    const results = broadsheetData
+      .map((student) => ({
+        studentId: student.id,
+        score: getScore(student, subjectId),
+      }))
+      .filter((r) => r.score !== "-")
+      .sort((a, b) => b.score - a.score);
+
+    const positions = {};
+    results.forEach((r, idx) => {
+      positions[r.studentId] = idx + 1;
+    });
+    return positions;
+  };
+
   // Fix #5: sorting logic
   const handleSort = (column) => {
     if (sortBy === column) {
@@ -225,21 +255,53 @@ const Broadsheet = () => {
       "Rank",
       "Student Name",
       "Reg Number",
-      ...subjects.map((s) => s.name),
+      ...subjects.flatMap((s) => [
+        `${s.name} - 1st CA`,
+        `${s.name} - 2nd CA`,
+        `${s.name} - Exam`,
+        `${s.name} - Total`,
+        `${s.name} - Average`,
+        `${s.name} - Position`,
+      ]),
       "Total",
       "Average",
-    ];
+    ];}
 
     const rows = sortedData.map((student) => {
-      const subjectScores = subjects.map((subject) => {
-        const score = getScore(student, subject.id);
-        return score === "-" ? "" : score;
+      const positions = {};
+      subjects.forEach((subject) => {
+        const subjectResults = broadsheetData
+          .map((s) => ({
+            studentId: s.id,
+            score: getScore(s, subject.id),
+          }))
+          .filter((r) => r.score !== "-")
+          .sort((a, b) => b.score - a.score);
+        subjectResults.forEach((r, idx) => {
+          positions[`${subject.id}-${r.studentId}`] = idx + 1;
+        });
       });
+
+      const subjectDetails = subjects.flatMap((subject) => {
+        const details = getResultDetails(student, subject.id);
+        const position = details ? positions[`${subject.id}-${student.id}`] || "-" : "-";
+        return details
+          ? [
+              details.ca1,
+              details.ca2,
+              details.exam,
+              details.total,
+              details.average.toFixed(1),
+              position,
+            ]
+          : ["", "", "", "", "", ""];
+      });
+
       return [
         getRankLabel(student.rank),
         `${student.lastName} ${student.firstName}`,
         student.regNumber || student.registrationNumber || "",
-        ...subjectScores,
+        ...subjectDetails,
         student.totalScore.toFixed(0),
         `${student.avgScore.toFixed(1)}%`,
       ];
@@ -400,11 +462,40 @@ const Broadsheet = () => {
                     {subjects.map((subject) => (
                       <th
                         key={subject.id}
-                        className="p-4 text-center font-black uppercase tracking-widest text-[10px] min-w-[100px] border-r-2 border-black/10 text-slate-300"
+                        colSpan="6"
+                        className="p-4 text-center font-black uppercase tracking-widest text-[10px] border-r-2 border-black/10 text-slate-300 border-b-2"
                       >
                         {subject.name}
                       </th>
                     ))}
+                  </tr>
+                  <tr className="border-b-4 border-black">
+                    {/* Empty header for Rank and Student Name */}
+                    <th></th>
+                    <th></th>
+                    {/* Sub-headers for each subject */}
+                    {subjects.map((subject) => (
+                      <React.Fragment key={subject.id}>
+                        <th className="p-2 text-center font-black uppercase tracking-widest text-[9px] bg-slate-800 text-white border-r-2 border-black/10 text-accent-gold">
+                          1st CA
+                        </th>
+                        <th className="p-2 text-center font-black uppercase tracking-widest text-[9px] bg-slate-800 text-white border-r-2 border-black/10 text-accent-gold">
+                          2nd CA
+                        </th>
+                        <th className="p-2 text-center font-black uppercase tracking-widest text-[9px] bg-slate-800 text-white border-r-2 border-black/10 text-accent-gold">
+                          Exam
+                        </th>
+                        <th className="p-2 text-center font-black uppercase tracking-widest text-[9px] bg-slate-800 text-white border-r-2 border-black/10 text-accent-gold">
+                          Total
+                        </th>
+                        <th className="p-2 text-center font-black uppercase tracking-widest text-[9px] bg-slate-800 text-white border-r-2 border-black/10 text-accent-gold">
+                          Avg
+                        </th>
+                        <th className="p-2 text-center font-black uppercase tracking-widest text-[9px] bg-slate-800 text-white border-r-2 border-black/10 text-accent-red">
+                          Pos
+                        </th>
+                      </React.Fragment>
+                    )))
                     <th
                       className="p-4 text-center font-black uppercase tracking-widest text-xs border-r-2 border-black/10"
                       style={{
@@ -449,24 +540,44 @@ const Broadsheet = () => {
                           {student.lastName} {student.firstName}
                         </td>
                         {subjects.map((subject) => {
-                          const score = getScore(student, subject.id);
-                          const grade = getGrade(student, subject.id);
+                          const details = getResultDetails(student, subject.id);
+                          const positions = getSubjectPositions(subject.id);
+                          const position = details ? positions[student.id] || "-" : "-";
+
+                          if (!details) {
+                            return (
+                              <React.Fragment key={subject.id}>
+                                <td className="p-2 text-center text-gray-500 border-r-2 border-black/5 text-xs">-</td>
+                                <td className="p-2 text-center text-gray-500 border-r-2 border-black/5 text-xs">-</td>
+                                <td className="p-2 text-center text-gray-500 border-r-2 border-black/5 text-xs">-</td>
+                                <td className="p-2 text-center text-gray-500 border-r-2 border-black/5 text-xs">-</td>
+                                <td className="p-2 text-center text-gray-500 border-r-2 border-black/5 text-xs">-</td>
+                                <td className="p-2 text-center text-gray-500 border-r-2 border-black/5 text-xs">-</td>
+                              </React.Fragment>
+                            );
+                          }
+
                           return (
-                            <td
-                              key={subject.id}
-                              className="p-4 text-center border-r-2 border-black/5"
-                            >
-                              <div className="flex flex-col items-center">
-                                <span className="font-black text-lg text-white">
-                                  {score}
-                                </span>
-                                {grade && (
-                                  <span className="text-[10px] font-black text-accent-red">
-                                    {grade}
-                                  </span>
-                                )}
-                              </div>
-                            </td>
+                            <React.Fragment key={subject.id}>
+                              <td className="p-2 text-center font-black text-white text-sm border-r-2 border-black/5 bg-slate-800/30">
+                                {details.ca1}
+                              </td>
+                              <td className="p-2 text-center font-black text-white text-sm border-r-2 border-black/5 bg-slate-800/30">
+                                {details.ca2}
+                              </td>
+                              <td className="p-2 text-center font-black text-white text-sm border-r-2 border-black/5 bg-slate-800/30">
+                                {details.exam}
+                              </td>
+                              <td className="p-2 text-center font-black text-accent-gold text-sm border-r-2 border-black/5 bg-slate-700/50">
+                                {details.total}
+                              </td>
+                              <td className="p-2 text-center font-black text-accent-gold text-sm border-r-2 border-black/5 bg-slate-700/50">
+                                {details.average.toFixed(1)}
+                              </td>
+                              <td className="p-2 text-center font-black text-accent-red text-sm border-r-2 border-black/5 bg-accent-red/10">
+                                {position}
+                              </td>
+                            </React.Fragment>
                           );
                         })}
                         <td
