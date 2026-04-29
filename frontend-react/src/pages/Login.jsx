@@ -109,24 +109,24 @@ const Login = () => {
           setPassword("");
           setShowPassword(false);
         }}
-        className="mb-6 text-slate-300 font-medium text-sm flex items-center gap-2 hover:text-white transition-colors"
+        className="mb-4 text-slate-300 font-medium text-sm flex items-center gap-2 hover:text-white transition-colors"
       >
         ← Go Back
       </button>
 
-      <div className="professional-card p-5 mb-6 md:mb-8 flex items-center gap-4 bg-slate-800/60 border-slate-600/60">
+      <div className="professional-card p-4 mb-5 flex items-center gap-3 bg-slate-800/60 border-slate-600/60">
         {loginType === "ADMIN" ? (
-          <ShieldCheck size={28} className="text-accent-gold flex-shrink-0" />
+          <ShieldCheck size={24} className="text-accent-gold flex-shrink-0" />
         ) : loginType === "TEACHER" ? (
-          <UserCircle size={28} className="text-accent-gold flex-shrink-0" />
+          <UserCircle size={24} className="text-accent-gold flex-shrink-0" />
         ) : (
-          <Users size={28} className="text-accent-gold flex-shrink-0" />
+          <Users size={24} className="text-accent-gold flex-shrink-0" />
         )}
         <div>
-          <h3 className="text-lg md:text-2xl font-bold text-white">
+          <h3 className="text-base md:text-xl font-bold text-white">
             {loginType} Login
           </h3>
-          <p className="text-xs md:text-sm font-medium text-slate-300">
+          <p className="text-xs font-medium text-slate-300">
             Enter your credentials
           </p>
         </div>
@@ -138,9 +138,9 @@ const Login = () => {
         </div>
       )}
 
-      <form onSubmit={handleLogin} className="space-y-5 md:space-y-6">
+      <form onSubmit={handleLogin} className="space-y-4">
         <div className="relative group">
-          <label className="block text-sm md:text-base font-bold text-white mb-2.5">
+          <label className="block text-sm font-bold text-white mb-1.5">
             Username
           </label>
           <input
@@ -155,7 +155,7 @@ const Login = () => {
           />
         </div>
         <div className="relative group">
-          <label className="block text-sm md:text-base font-bold text-white mb-2.5">
+          <label className="block text-sm font-bold text-white mb-1.5">
             Password
           </label>
           <div className="relative">
@@ -181,7 +181,7 @@ const Login = () => {
         <button
           type="submit"
           disabled={loading}
-          className="w-full btn-primary text-base md:text-lg mt-6 disabled:opacity-60 disabled:cursor-not-allowed"
+          className="w-full btn-primary text-base py-2.5 mt-5 disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {loading ? "Accessing..." : "Access portal"}
         </button>
