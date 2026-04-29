@@ -49,6 +49,13 @@ const Student = sequelize.define("Student", {
     type: DataTypes.STRING,
     allowNull: true,
   },
+  parentEmail: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    validate: {
+      isEmail: true,
+    },
+  },
 });
 
 Student.belongsTo(User, { as: "Parent", foreignKey: "parentId" });

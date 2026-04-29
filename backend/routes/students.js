@@ -148,14 +148,20 @@ router.patch('/:id', auth, authorize(['ADMIN', 'TEACHER']), asyncHandler(async (
     return res.status(404).json({ error: 'Student not found' });
   }
 
-  const { firstName, lastName, studentClass, subjectIds, profileImage } = req.body;
+  const { firstName, lastName, studentClass, subjectIds, profileImage, parentEmail } = req.body;
 
   await student.update({ 
     ...(firstName && { firstName }), 
     ...(lastName && { lastName }), 
     ...(studentClass && { studentClass }), 
-    ...(profileImage && { profileImage }) 
+    ...(profileImage && { profileImage }),
+    ...(parentEmail && { parentEmail })
   });
+
+  // Update parent's email if provided
+  if (parentEmail && student.parentId) {
+    await User.update({ email: parentEmail }, { where: { id: student.parentId } });
+  }
 
   if (Array.isArray(subjectIds)) {
     await student.setSubjects(subjectIds);

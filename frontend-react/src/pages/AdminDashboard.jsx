@@ -845,6 +845,7 @@ const StudentList = () => {
     registrationNumber: "",
     studentClass: "",
     dateOfBirth: "",
+    parentEmail: "",
     subjectIds: [],
     profileImage: null,
   });
@@ -942,6 +943,7 @@ const StudentList = () => {
         registrationNumber: "",
         studentClass: "",
         dateOfBirth: "",
+        parentEmail: "",
         subjectIds: [],
         profileImage: null,
       });
@@ -1287,6 +1289,23 @@ const StudentList = () => {
                       }
                     />
                   </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-black text-black dark:text-slate-300 uppercase tracking-widest">
+                      Parent Email 📧
+                    </label>
+                    <input
+                      type="email"
+                      className="input-cartoon w-full"
+                      placeholder="parent@example.com"
+                      value={formData.parentEmail}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          parentEmail: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
                 </div>
 
                 <div className="md:col-span-2 space-y-4">
@@ -1464,6 +1483,23 @@ const StudentList = () => {
                         setEditingStudent({
                           ...editingStudent,
                           dateOfBirth: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-black text-black dark:text-slate-300 uppercase tracking-widest">
+                      Parent Email 📧
+                    </label>
+                    <input
+                      type="email"
+                      className="input-cartoon w-full"
+                      placeholder="parent@example.com"
+                      value={editingStudent.parentEmail || ""}
+                      onChange={(e) =>
+                        setEditingStudent({
+                          ...editingStudent,
+                          parentEmail: e.target.value,
                         })
                       }
                     />
