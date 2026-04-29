@@ -2200,6 +2200,8 @@ const TeacherManagement = () => {
   const [message, setMessage] = useState("");
   const [creds, setCreds] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [subjectSectionFilter, setSubjectSectionFilter] = useState('');
+  const [editSubjectSectionFilter, setEditSubjectSectionFilter] = useState('');
 
   const classes = [
     "Pre-Nursery",
@@ -2240,6 +2242,36 @@ const TeacherManagement = () => {
     } catch (err) {
       console.error(err);
     }
+  };
+
+  const NURSERY_CLASSES = ['Pre-Nursery', 'Nursery 1', 'Nursery 2'];
+  const PRIMARY_CLASSES = ['Primary 1', 'Primary 2', 'Primary 3', 'Primary 4', 'Primary 5', 'Primary 6'];
+  const JSS_CLASSES    = ['JSS 1', 'JSS 2', 'JSS 3'];
+  const SSS_CLASSES    = ['SSS 1', 'SSS 2', 'SSS 3'];
+
+  const getSectionFilterForClass = (className) => {
+    if (NURSERY_CLASSES.includes(className)) return 'Nursery';
+    if (PRIMARY_CLASSES.includes(className)) return 'Primary';
+    if (JSS_CLASSES.includes(className))    return 'Junior Secondary';
+    if (SSS_CLASSES.includes(className))    return 'Senior Secondary';
+    return '';
+  };
+
+  const getFilteredSubjects = (allSubjects, filter) => {
+    if (!filter) return allSubjects;
+    if (filter === 'Nursery')          return allSubjects.filter(s => s.category === 'Nursery');
+    if (filter === 'Primary')          return allSubjects.filter(s => s.category === 'Primary');
+    if (filter === 'Junior Secondary') return allSubjects.filter(s => s.category === 'Secondary' && s.level === 'Junior');
+    if (filter === 'Senior Secondary') return allSubjects.filter(s => s.category === 'Secondary' && s.level === 'Senior');
+    return allSubjects;
+  };
+
+  const getAutoSubjectsForClass = (className, allSubjects) => {
+    // SSS classes are NOT auto-assigned (teacher picks specific section subjects)
+    if (SSS_CLASSES.includes(className)) return null;
+    const filter = getSectionFilterForClass(className);
+    if (!filter) return null;
+    return getFilteredSubjects(allSubjects, filter).map(s => s.name);
   };
 
   const handleImageChange = (e) => {
@@ -2545,9 +2577,17 @@ const TeacherManagement = () => {
             <select
               className="input-cartoon w-full"
               value={formData.assignedClass}
-              onChange={(e) =>
-                setFormData({ ...formData, assignedClass: e.target.value })
-              }
+              onChange={(e) => {
+                const cls = e.target.value;
+                const sectionFilter = getSectionFilterForClass(cls);
+                const autoSubjects = cls ? getAutoSubjectsForClass(cls, subjects) : null;
+                setSubjectSectionFilter(sectionFilter);
+                setFormData({
+                  ...formData,
+                  assignedClass: cls,
+                  assignedSubject: autoSubjects !== null ? autoSubjects : formData.assignedSubject,
+                });
+              }}
             >
               <option value="">Select a Class</option>
               {classes.map((c) => (
@@ -2559,24 +2599,66 @@ const TeacherManagement = () => {
           </div>
 
           <div className="space-y-2 md:col-span-2">
-            <label className="text-lg font-black text-black dark:text-slate-300 uppercase tracking-tight text-3d">
-              Assign Subjects (Select Multiple)
-            </label>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 p-4 border-4 border-black rounded-2xl bg-gray-50 dark:bg-slate-800 shadow-inner max-h-48 overflow-y-auto">
-              {subjects.map((s) => (
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+              <label className="text-lg font-black text-black dark:text-slate-300 uppercase tracking-tight text-3d">
+                Assign Subjects
+                {formData.assignedSubject.length > 0 && (
+                  <span className="ml-2 text-sm text-accent-gold font-black">({formData.assignedSubject.length} selected)</span>
+                )}
+              </label>
+              <div className="flex flex-wrap gap-1">
+                {['', 'Nursery', 'Primary', 'Junior Secondary', 'Senior Secondary'].map((sec) => (
+                  <button
+                    key={sec || 'all'}
+                    type="button"
+                    onClick={() => setSubjectSectionFilter(sec)}
+                    className={`px-2 py-1 rounded-lg border-2 font-black text-[9px] uppercase tracking-widest transition-all ${
+                      subjectSectionFilter === sec
+                        ? 'bg-accent-gold border-black text-black shadow-cartoon-xs'
+                        : 'bg-slate-200 dark:bg-slate-700 border-gray-300 dark:border-slate-600 text-gray-500 dark:text-slate-400 hover:border-black'
+                    }`}
+                  >
+                    {sec || 'All'}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 mb-1">
+              <button
+                type="button"
+                onClick={() => setFormData(prev => ({ ...prev, assignedSubject: getFilteredSubjects(subjects, subjectSectionFilter).map(s => s.name) }))}
+                className="text-[9px] font-black uppercase tracking-widest text-blue-500 hover:text-blue-700 border border-blue-300 rounded px-2 py-0.5"
+              >
+                Select All Shown
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormData(prev => ({ ...prev, assignedSubject: [] }))}
+                className="text-[9px] font-black uppercase tracking-widest text-red-400 hover:text-red-600 border border-red-300 rounded px-2 py-0.5"
+              >
+                Clear All
+              </button>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 p-4 border-4 border-black rounded-2xl bg-gray-50 dark:bg-slate-800 shadow-inner max-h-48 overflow-y-auto">
+              {getFilteredSubjects(subjects, subjectSectionFilter).map((s) => (
                 <button
                   key={s.id}
                   type="button"
                   onClick={() => handleSubjectToggle(s.name)}
                   className={`p-3 rounded-xl border-2 font-black text-[10px] uppercase tracking-tighter transition-all ${
                     formData.assignedSubject.includes(s.name)
-                      ? "bg-accent-gold border-black shadow-cartoon-xs -translate-y-1 text-black"
-                      : "bg-slate-50 dark:bg-slate-700 border-gray-200 dark:border-slate-600 text-gray-400 dark:text-slate-500 hover:border-black"
+                      ? 'bg-accent-gold border-black shadow-cartoon-xs -translate-y-1 text-black'
+                      : 'bg-slate-50 dark:bg-slate-700 border-gray-200 dark:border-slate-600 text-gray-400 dark:text-slate-500 hover:border-black'
                   }`}
                 >
                   {s.name}
                 </button>
               ))}
+              {getFilteredSubjects(subjects, subjectSectionFilter).length === 0 && (
+                <div className="col-span-4 text-center text-xs font-black uppercase tracking-widest text-gray-400 py-4">
+                  No subjects in this section
+                </div>
+              )}
             </div>
           </div>
 
@@ -2831,12 +2913,20 @@ const TeacherManagement = () => {
                 <select
                   className="input-cartoon w-full"
                   value={editingTeacher.assignedClass || ""}
-                  onChange={(e) =>
+                  onChange={(e) => {
+                    const cls = e.target.value;
+                    const sectionFilter = getSectionFilterForClass(cls);
+                    const autoSubjects = cls ? getAutoSubjectsForClass(cls, subjects) : null;
+                    setEditSubjectSectionFilter(sectionFilter);
+                    const currentSubjects = typeof editingTeacher.assignedSubject === 'string'
+                      ? editingTeacher.assignedSubject
+                      : (editingTeacher.assignedSubject || []).join(', ');
                     setEditingTeacher({
                       ...editingTeacher,
-                      assignedClass: e.target.value,
-                    })
-                  }
+                      assignedClass: cls,
+                      assignedSubject: autoSubjects !== null ? autoSubjects.join(', ') : currentSubjects,
+                    });
+                  }}
                 >
                   <option value="">None</option>
                   {classes.map((c) => (
@@ -2847,21 +2937,64 @@ const TeacherManagement = () => {
                 </select>
               </div>
               <div className="space-y-2 md:col-span-2">
-                <label className="text-sm font-black text-black dark:text-slate-300 uppercase tracking-widest">
-                  Assign Subjects (Select Multiple)
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 p-4 border-4 border-black rounded-2xl bg-gray-50 dark:bg-slate-800 shadow-inner max-h-40 overflow-y-auto">
-                  {subjects.map((s) => (
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                  <label className="text-sm font-black text-black dark:text-slate-300 uppercase tracking-widest">
+                    Assign Subjects
+                    {(() => {
+                      const count = (editingTeacher.assignedSubject || '').split(', ').filter(Boolean).length;
+                      return count > 0 ? <span className="ml-2 text-accent-gold">({count} selected)</span> : null;
+                    })()}
+                  </label>
+                  <div className="flex flex-wrap gap-1">
+                    {['', 'Nursery', 'Primary', 'Junior Secondary', 'Senior Secondary'].map((sec) => (
+                      <button
+                        key={sec || 'all'}
+                        type="button"
+                        onClick={() => setEditSubjectSectionFilter(sec)}
+                        className={`px-2 py-1 rounded-lg border-2 font-black text-[9px] uppercase tracking-widest transition-all ${
+                          editSubjectSectionFilter === sec
+                            ? 'bg-accent-gold border-black text-black shadow-cartoon-xs'
+                            : 'bg-slate-200 dark:bg-slate-700 border-gray-300 dark:border-slate-600 text-gray-500 dark:text-slate-400 hover:border-black'
+                        }`}
+                      >
+                        {sec || 'All'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2 mb-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const shown = getFilteredSubjects(subjects, editSubjectSectionFilter).map(s => s.name);
+                      const existing = (editingTeacher.assignedSubject || '').split(', ').filter(Boolean);
+                      const merged = [...new Set([...existing, ...shown])];
+                      setEditingTeacher({ ...editingTeacher, assignedSubject: merged.join(', ') });
+                    }}
+                    className="text-[9px] font-black uppercase tracking-widest text-blue-500 hover:text-blue-700 border border-blue-300 rounded px-2 py-0.5"
+                  >
+                    Select All Shown
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditingTeacher({ ...editingTeacher, assignedSubject: '' })}
+                    className="text-[9px] font-black uppercase tracking-widest text-red-400 hover:text-red-600 border border-red-300 rounded px-2 py-0.5"
+                  >
+                    Clear All
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 p-4 border-4 border-black rounded-2xl bg-gray-50 dark:bg-slate-800 shadow-inner max-h-40 overflow-y-auto">
+                  {getFilteredSubjects(subjects, editSubjectSectionFilter).map((s) => (
                     <button
                       key={s.id}
                       type="button"
                       onClick={() => handleEditSubjectToggle(s.name)}
                       className={`p-2 rounded-xl border-2 font-black text-[10px] uppercase tracking-tighter transition-all ${
-                        (editingTeacher.assignedSubject || "")
-                          .split(", ")
+                        (editingTeacher.assignedSubject || '')
+                          .split(', ')
                           .includes(s.name)
-                          ? "bg-accent-gold border-black shadow-cartoon-xs -translate-y-1 text-black"
-                          : "bg-slate-50 dark:bg-slate-700 border-gray-200 dark:border-slate-600 text-gray-400 dark:text-slate-500 hover:border-black"
+                          ? 'bg-accent-gold border-black shadow-cartoon-xs -translate-y-1 text-black'
+                          : 'bg-slate-50 dark:bg-slate-700 border-gray-200 dark:border-slate-600 text-gray-400 dark:text-slate-500 hover:border-black'
                       }`}
                     >
                       {s.name}
