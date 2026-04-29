@@ -917,7 +917,6 @@ const StudentList = () => {
 
     return filtered;
   };
-  };
 
   const getGroupedSubjects = (subjectList) => {
     const grouped = {};
@@ -1627,7 +1626,7 @@ const StudentList = () => {
                   </div>
                 </div>
 
-                  <div className="md:col-span-2 space-y-2">
+                <div className="md:col-span-2 space-y-2">
                   <label className="text-xs font-semibold text-black dark:text-slate-300 uppercase tracking-tight">
                     Subjects
                   </label>
