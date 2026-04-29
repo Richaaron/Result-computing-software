@@ -881,7 +881,44 @@ const StudentList = () => {
     api.get("/students/subjects").then((res) => setSubjects(res.data));
   };
 
-  const handleImageChange = (e) => {
+  const getSubjectsForClass = () => {
+    if (!formData.studentClass) return subjects;
+    
+    const classToLevel = {
+      "Pre-Nursery": { level: "General", category: "Primary" },
+      "Nursery 1": { level: "General", category: "Primary" },
+      "Nursery 2": { level: "General", category: "Primary" },
+      "Primary 1": { level: "General", category: "Primary" },
+      "Primary 2": { level: "General", category: "Primary" },
+      "Primary 3": { level: "General", category: "Primary" },
+      "Primary 4": { level: "General", category: "Primary" },
+      "Primary 5": { level: "General", category: "Primary" },
+      "Primary 6": { level: "General", category: "Primary" },
+      "JSS 1": { level: "Junior", category: "Secondary" },
+      "JSS 2": { level: "Junior", category: "Secondary" },
+      "JSS 3": { level: "Junior", category: "Secondary" },
+      "SSS 1": { level: "Senior", category: "Secondary" },
+      "SSS 2": { level: "Senior", category: "Secondary" },
+      "SSS 3": { level: "Senior", category: "Secondary" },
+    };
+
+    const classInfo = classToLevel[formData.studentClass];
+    if (!classInfo) return subjects;
+
+    return subjects.filter(
+      (s) => s.category === classInfo.category && s.level === classInfo.level
+    );
+  };
+
+  const getGroupedSubjects = (subjectList) => {
+    const grouped = {};
+    subjectList.forEach((sub) => {
+      const key = sub.section || "General";
+      if (!grouped[key]) grouped[key] = [];
+      grouped[key].push(sub);
+    });
+    return grouped;
+  };
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
@@ -1151,11 +1188,11 @@ const StudentList = () => {
               Enroll New Legend ⭐
             </h3>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Profile Image Section */}
-                <div className="flex flex-col items-center gap-3">
-                  <div className="w-32 h-32 bg-gray-100 dark:bg-slate-800 border-4 border-black rounded-3xl overflow-hidden shadow-md relative group">
+                <div className="flex flex-col items-center gap-2">
+                  <div className="w-24 h-24 sm:w-32 sm:h-32 bg-gray-100 dark:bg-slate-800 border-2 border-gray-300 dark:border-slate-700 rounded-2xl overflow-hidden shadow-sm relative group">
                     {formData.profileImage ? (
                       <img
                         src={formData.profileImage}
@@ -1163,19 +1200,19 @@ const StudentList = () => {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 gap-2">
-                        <UserPlus size={40} />
-                        <span className="text-xs font-black uppercase tracking-widest">
+                      <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 gap-1">
+                        <UserPlus size={28} className="sm:w-8 sm:h-8" />
+                        <span className="text-[8px] sm:text-xs font-semibold uppercase tracking-tight">
                           Add Photo
                         </span>
                       </div>
                     )}
-                    <label className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center cursor-pointer gap-2">
-                      <Upload size={24} className="text-white" />
-                      <span className="text-white font-black text-xs uppercase tracking-widest">
+                    <label className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center cursor-pointer gap-1">
+                      <Upload size={20} className="text-white sm:w-6 sm:h-6" />
+                      <span className="text-white font-semibold text-[8px] sm:text-xs uppercase tracking-tight">
                         {formData.profileImage
-                          ? "Change Photo"
-                          : "Upload Photo"}
+                          ? "Change"
+                          : "Upload"}
                       </span>
                       <input
                         type="file"
@@ -1201,15 +1238,15 @@ const StudentList = () => {
                   )}
                 </div>
 
-                <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-sm font-black text-black dark:text-slate-300 uppercase tracking-widest">
+                <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-black dark:text-slate-300 uppercase tracking-tight">
                       First Name
                     </label>
                     <input
                       type="text"
                       required
-                      className="input-cartoon w-full"
+                      className="input-cartoon w-full text-sm py-2"
                       placeholder="John"
                       value={formData.firstName}
                       onChange={(e) =>
@@ -1217,14 +1254,14 @@ const StudentList = () => {
                       }
                     />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-black text-black dark:text-slate-300 uppercase tracking-widest">
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-black dark:text-slate-300 uppercase tracking-tight">
                       Last Name
                     </label>
                     <input
                       type="text"
                       required
-                      className="input-cartoon w-full"
+                      className="input-cartoon w-full text-sm py-2"
                       placeholder="Doe"
                       value={formData.lastName}
                       onChange={(e) =>
@@ -1232,14 +1269,14 @@ const StudentList = () => {
                       }
                     />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-black text-black dark:text-slate-300 uppercase tracking-widest">
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-black dark:text-slate-300 uppercase tracking-tight">
                       ID Number
                     </label>
                     <input
                       type="text"
                       required
-                      className="input-cartoon w-full"
+                      className="input-cartoon w-full text-sm py-2"
                       placeholder="LEGEND-001"
                       value={formData.registrationNumber}
                       onChange={(e) =>
@@ -1250,12 +1287,12 @@ const StudentList = () => {
                       }
                     />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-black text-black dark:text-slate-300 uppercase tracking-widest">
-                      Assigned Class
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-black dark:text-slate-300 uppercase tracking-tight">
+                      Class
                     </label>
                     <select
-                      className="input-cartoon w-full"
+                      className="input-cartoon w-full text-sm py-2"
                       required
                       value={formData.studentClass}
                       onChange={(e) =>
@@ -1273,13 +1310,13 @@ const StudentList = () => {
                       ))}
                     </select>
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-black text-black dark:text-slate-300 uppercase tracking-widest">
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-black dark:text-slate-300 uppercase tracking-tight">
                       Date of Birth 🎂
                     </label>
                     <input
                       type="date"
-                      className="input-cartoon w-full"
+                      className="input-cartoon w-full text-sm py-2"
                       value={formData.dateOfBirth}
                       onChange={(e) =>
                         setFormData({
@@ -1289,13 +1326,13 @@ const StudentList = () => {
                       }
                     />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-black text-black dark:text-slate-300 uppercase tracking-widest">
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-black dark:text-slate-300 uppercase tracking-tight">
                       Parent Email 📧
                     </label>
                     <input
                       type="email"
-                      className="input-cartoon w-full"
+                      className="input-cartoon w-full text-sm py-2"
                       placeholder="parent@example.com"
                       value={formData.parentEmail}
                       onChange={(e) =>
@@ -1308,25 +1345,53 @@ const StudentList = () => {
                   </div>
                 </div>
 
-                <div className="md:col-span-2 space-y-4">
-                  <label className="text-sm font-black text-black dark:text-slate-300 uppercase tracking-widest">
-                    Assign Initial Knowledge (Subjects)
+                <div className="md:col-span-2 space-y-2">
+                  <label className="text-xs font-semibold text-black dark:text-slate-300 uppercase tracking-tight">
+                    Subjects
                   </label>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-4 border-4 border-black rounded-2xl bg-gray-50 dark:bg-slate-800 max-h-40 overflow-y-auto">
-                    {subjects.map((sub) => (
-                      <button
-                        key={sub.id}
-                        type="button"
-                        onClick={() => handleSubjectToggle(sub.id)}
-                        className={`p-2 rounded-xl border-2 font-black text-[10px] uppercase tracking-tighter transition-all ${
-                          formData.subjectIds.includes(sub.id)
-                            ? "bg-accent-gold border-black shadow-cartoon-xs -translate-y-1 text-black"
-                            : "bg-slate-50 dark:bg-slate-700 border-gray-200 dark:border-slate-600 text-gray-400 dark:text-slate-500 hover:border-black"
-                        }`}
-                      >
-                        {sub.name}
-                      </button>
-                    ))}
+                  <div className="space-y-3 p-3 border-2 border-gray-300 dark:border-slate-700 rounded-lg bg-gray-50 dark:bg-slate-800 max-h-48 overflow-y-auto">
+                    {formData.studentClass && ["SSS 1", "SSS 2", "SSS 3"].includes(formData.studentClass)
+                      ? Object.entries(getGroupedSubjects(getSubjectsForClass())).map(([section, subs]) => (
+                          <div key={section} className="space-y-2">
+                            <h4 className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase">
+                              {section} Section
+                            </h4>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                              {subs.map((sub) => (
+                                <button
+                                  key={sub.id}
+                                  type="button"
+                                  onClick={() => handleSubjectToggle(sub.id)}
+                                  className={`p-2 rounded-lg border text-[9px] sm:text-[10px] font-semibold uppercase tracking-tight transition-all ${
+                                    formData.subjectIds.includes(sub.id)
+                                      ? "bg-blue-500 border-blue-600 shadow-sm text-white"
+                                      : "bg-white dark:bg-slate-700 border-gray-200 dark:border-slate-600 text-gray-700 dark:text-slate-300 hover:border-blue-400"
+                                  }`}
+                                >
+                                  {sub.name}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        ))
+                      : (
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                            {getSubjectsForClass().map((sub) => (
+                              <button
+                                key={sub.id}
+                                type="button"
+                                onClick={() => handleSubjectToggle(sub.id)}
+                                className={`p-2 rounded-lg border text-[9px] sm:text-[10px] font-semibold uppercase tracking-tight transition-all ${
+                                  formData.subjectIds.includes(sub.id)
+                                    ? "bg-blue-500 border-blue-600 shadow-sm text-white"
+                                    : "bg-white dark:bg-slate-700 border-gray-200 dark:border-slate-600 text-gray-700 dark:text-slate-300 hover:border-blue-400"
+                                }`}
+                              >
+                                {sub.name}
+                              </button>
+                            ))}
+                          </div>
+                        )}
                   </div>
                 </div>
               </div>
@@ -1366,11 +1431,11 @@ const StudentList = () => {
               Modify Legend 🛠️
             </h3>
 
-            <form onSubmit={handleUpdateStudent} className="space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <form onSubmit={handleUpdateStudent} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Profile Image Section */}
-                <div className="md:row-span-2 flex flex-col items-center gap-4">
-                  <div className="w-48 h-48 bg-gray-100 dark:bg-slate-800 border-4 border-black rounded-3xl overflow-hidden shadow-cartoon-sm relative group">
+                <div className="md:row-span-2 flex flex-col items-center gap-2">
+                  <div className="w-24 h-24 sm:w-32 sm:h-32 bg-gray-100 dark:bg-slate-800 border-2 border-gray-300 dark:border-slate-700 rounded-2xl overflow-hidden shadow-sm relative group">
                     {editingStudent.profileImage ? (
                       <img
                         src={editingStudent.profileImage}
@@ -1378,12 +1443,12 @@ const StudentList = () => {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-400 font-black text-4xl">
+                      <div className="w-full h-full flex items-center justify-center text-gray-400 font-semibold text-2xl sm:text-3xl">
                         {editingStudent.firstName?.charAt(0)}
                       </div>
                     )}
-                    <label className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
-                      <Upload size={32} className="text-white" />
+                    <label className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
+                      <Upload size={20} className="text-white sm:w-6 sm:h-6" />
                       <input
                         type="file"
                         className="hidden"
@@ -1392,20 +1457,20 @@ const StudentList = () => {
                       />
                     </label>
                   </div>
-                  <p className="text-xs font-black uppercase tracking-widest text-gray-500">
-                    Update Avatar
+                  <p className="text-[8px] sm:text-xs font-semibold uppercase tracking-tight text-gray-500">
+                    Photo
                   </p>
                 </div>
 
-                <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-sm font-black text-black dark:text-slate-300 uppercase tracking-widest">
+                <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-black dark:text-slate-300 uppercase tracking-tight">
                       First Name
                     </label>
                     <input
                       type="text"
                       required
-                      className="input-cartoon w-full"
+                      className="input-cartoon w-full text-sm py-2"
                       value={editingStudent.firstName}
                       onChange={(e) =>
                         setEditingStudent({
@@ -1415,14 +1480,14 @@ const StudentList = () => {
                       }
                     />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-black text-black dark:text-slate-300 uppercase tracking-widest">
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-black dark:text-slate-300 uppercase tracking-tight">
                       Last Name
                     </label>
                     <input
                       type="text"
                       required
-                      className="input-cartoon w-full"
+                      className="input-cartoon w-full text-sm py-2"
                       value={editingStudent.lastName}
                       onChange={(e) =>
                         setEditingStudent({
@@ -1432,14 +1497,14 @@ const StudentList = () => {
                       }
                     />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-black text-black dark:text-slate-300 uppercase tracking-widest">
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-black dark:text-slate-300 uppercase tracking-tight">
                       ID Number
                     </label>
                     <input
                       type="text"
                       required
-                      className="input-cartoon w-full"
+                      className="input-cartoon w-full text-sm py-2"
                       value={editingStudent.registrationNumber}
                       onChange={(e) =>
                         setEditingStudent({
@@ -1449,12 +1514,12 @@ const StudentList = () => {
                       }
                     />
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-black text-black dark:text-slate-300 uppercase tracking-widest">
-                      Assigned Class
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-black dark:text-slate-300 uppercase tracking-tight">
+                      Class
                     </label>
                     <select
-                      className="input-cartoon w-full"
+                      className="input-cartoon w-full text-sm py-2"
                       required
                       value={editingStudent.studentClass}
                       onChange={(e) =>
@@ -1471,13 +1536,13 @@ const StudentList = () => {
                       ))}
                     </select>
                   </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-black text-black dark:text-slate-300 uppercase tracking-widest">
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-black dark:text-slate-300 uppercase tracking-tight">
                       Date of Birth 🎂
                     </label>
                     <input
                       type="date"
-                      className="input-cartoon w-full"
+                      className="input-cartoon w-full text-sm py-2"
                       value={editingStudent.dateOfBirth || ""}
                       onChange={(e) =>
                         setEditingStudent({
@@ -1487,7 +1552,23 @@ const StudentList = () => {
                       }
                     />
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-black dark:text-slate-300 uppercase tracking-tight">
+                      Parent Email 📧
+                    </label>
+                    <input
+                      type="email"
+                      className="input-cartoon w-full text-sm py-2"
+                      placeholder="parent@example.com"
+                      value={editingStudent.parentEmail || ""}
+                      onChange={(e) =>
+                        setEditingStudent({
+                          ...editingStudent,
+                          parentEmail: e.target.value,
+                        })
+                      }
+                    />
+                  </div>
                     <label className="text-sm font-black text-black dark:text-slate-300 uppercase tracking-widest">
                       Parent Email 📧
                     </label>
@@ -1502,31 +1583,59 @@ const StudentList = () => {
                           parentEmail: e.target.value,
                         })
                       }
-                    />
-                  </div>
                 </div>
 
-                <div className="md:col-span-2 space-y-4">
-                  <label className="text-sm font-black text-black dark:text-slate-300 uppercase tracking-widest">
-                    Update Knowledge (Subjects)
+                <div className="md:col-span-2 space-y-2">
+                  <label className="text-xs font-semibold text-black dark:text-slate-300 uppercase tracking-tight">
+                    Subjects
                   </label>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-4 border-4 border-black rounded-2xl bg-gray-50 dark:bg-slate-800 max-h-40 overflow-y-auto">
-                    {subjects.map((sub) => (
-                      <button
-                        key={sub.id}
-                        type="button"
-                        onClick={() => handleEditSubjectToggle(sub.id)}
-                        className={`p-2 rounded-xl border-2 font-black text-[10px] uppercase tracking-tighter transition-all ${
-                          (editingStudent.Subjects || []).some(
-                            (s) => s.id === sub.id,
-                          )
-                            ? "bg-accent-gold border-black shadow-cartoon-xs -translate-y-1 text-black"
-                            : "bg-slate-50 dark:bg-slate-700 border-gray-200 dark:border-slate-600 text-gray-400 dark:text-slate-500 hover:border-black"
-                        }`}
-                      >
-                        {sub.name}
-                      </button>
-                    ))}
+                  <div className="space-y-3 p-3 border-2 border-gray-300 dark:border-slate-700 rounded-lg bg-gray-50 dark:bg-slate-800 max-h-48 overflow-y-auto">
+                    {editingStudent.studentClass && ["SSS 1", "SSS 2", "SSS 3"].includes(editingStudent.studentClass)
+                      ? Object.entries(getGroupedSubjects(subjects.filter(s => s.category === "Secondary" && s.level === "Senior"))).map(([section, subs]) => (
+                          <div key={section} className="space-y-2">
+                            <h4 className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase">
+                              {section} Section
+                            </h4>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                              {subs.map((sub) => (
+                                <button
+                                  key={sub.id}
+                                  type="button"
+                                  onClick={() => handleEditSubjectToggle(sub.id)}
+                                  className={`p-2 rounded-lg border text-[9px] sm:text-[10px] font-semibold uppercase tracking-tight transition-all ${
+                                    (editingStudent.Subjects || []).some(
+                                      (s) => s.id === sub.id,
+                                    )
+                                      ? "bg-blue-500 border-blue-600 shadow-sm text-white"
+                                      : "bg-white dark:bg-slate-700 border-gray-200 dark:border-slate-600 text-gray-700 dark:text-slate-300 hover:border-blue-400"
+                                  }`}
+                                >
+                                  {sub.name}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        ))
+                      : (
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                            {subjects.map((sub) => (
+                              <button
+                                key={sub.id}
+                                type="button"
+                                onClick={() => handleEditSubjectToggle(sub.id)}
+                                className={`p-2 rounded-lg border text-[9px] sm:text-[10px] font-semibold uppercase tracking-tight transition-all ${
+                                  (editingStudent.Subjects || []).some(
+                                    (s) => s.id === sub.id,
+                                  )
+                                    ? "bg-blue-500 border-blue-600 shadow-sm text-white"
+                                    : "bg-white dark:bg-slate-700 border-gray-200 dark:border-slate-600 text-gray-700 dark:text-slate-300 hover:border-blue-400"
+                                }`}
+                              >
+                                {sub.name}
+                              </button>
+                            ))}
+                          </div>
+                        )}
                   </div>
                 </div>
               </div>

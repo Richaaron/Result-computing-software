@@ -18,6 +18,10 @@ const Subject = sequelize.define('Subject', {
   level: {
     type: DataTypes.STRING, // e.g., Junior Secondary, Senior Secondary
     allowNull: false
+  },
+  section: {
+    type: DataTypes.STRING, // Science, Art, Commercial (for Senior Secondary)
+    allowNull: true
   }
 });
 
