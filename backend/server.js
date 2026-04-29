@@ -288,6 +288,12 @@ const seedData = async () => {
       { name: 'Home Economics', category: 'Primary', level: 'General', section: null },
       { name: 'Physical & Health Education', category: 'Primary', level: 'General', section: null },
       { name: 'Information Technology', category: 'Primary', level: 'General', section: null },
+      { name: 'Phonics', category: 'Primary', level: 'General', section: null },
+      { name: 'Quantitative Reasoning', category: 'Primary', level: 'General', section: null },
+      { name: 'Verbal Reasoning', category: 'Primary', level: 'General', section: null },
+      { name: 'Religious Studies', category: 'Primary', level: 'General', section: null },
+      { name: 'Vocational Aptitude', category: 'Primary', level: 'General', section: null },
+      { name: 'Literature', category: 'Primary', level: 'General', section: null },
       
       // Junior Secondary
       { name: 'English Language', category: 'Secondary', level: 'Junior', section: null },
