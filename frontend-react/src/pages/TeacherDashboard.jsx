@@ -431,6 +431,7 @@ const RegisterStudent = () => {
     dateOfBirth: "",
     subjectIds: [],
     profileImage: null,
+    feesPaid: false,
   });
   const [subjects, setSubjects] = useState([]);
   const [message, setMessage] = useState("");
@@ -466,6 +467,7 @@ const RegisterStudent = () => {
         dateOfBirth: "",
         subjectIds: [],
         profileImage: null,
+        feesPaid: false,
       });
     } catch (err) {
       setMessage("Error registering student");
@@ -623,6 +625,21 @@ const RegisterStudent = () => {
               setFormData({ ...formData, dateOfBirth: e.target.value })
             }
           />
+        </div>
+
+        <div className="space-y-2 flex items-center">
+          <input
+            type="checkbox"
+            id="feesPaid"
+            className="w-6 h-6 border-4 border-black rounded-md accent-accent-gold cursor-pointer mt-8"
+            checked={formData.feesPaid}
+            onChange={(e) =>
+              setFormData({ ...formData, feesPaid: e.target.checked })
+            }
+          />
+          <label htmlFor="feesPaid" className="ml-3 text-lg font-black text-black uppercase tracking-tight text-3d cursor-pointer mt-8">
+            School Fees Paid? 💰
+          </label>
         </div>
 
         <div className="space-y-2">
@@ -1370,6 +1387,26 @@ const ResultReleaseManager = ({ user }) => {
     }
   };
 
+  const handleToggleFeeStatus = async (student) => {
+    try {
+      // Create FormData to pass to the update endpoint (which expects form data because of profile images)
+      const updateData = new FormData();
+      updateData.append("firstName", student.firstName);
+      updateData.append("lastName", student.lastName);
+      updateData.append("studentClass", student.studentClass);
+      updateData.append("feesPaid", (!student.feesPaid).toString());
+      
+      await api.put(`/students/${student.id}`, updateData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setMessage(`Fee status updated for ${student.firstName} 💰`);
+      fetchStudents();
+      setTimeout(() => setMessage(""), 3000);
+    } catch (err) {
+      setMessage("Error updating fee status ❌");
+    }
+  };
+
   const filteredStudents = students.filter((s) => {
     const matchesSearch = `${s.firstName} ${s.lastName} ${s.registrationNumber}`
       .toLowerCase()
@@ -1466,6 +1503,9 @@ const ResultReleaseManager = ({ user }) => {
               <th className="py-6 font-black text-black uppercase tracking-widest text-sm text-center">
                 Status
               </th>
+              <th className="py-6 font-black text-black uppercase tracking-widest text-sm text-center">
+                Fees
+              </th>
               <th className="py-6 font-black text-black uppercase tracking-widest text-sm text-right">
                 Class
               </th>
@@ -1519,6 +1559,20 @@ const ResultReleaseManager = ({ user }) => {
                         <Lock size={12} /> Held
                       </span>
                     )}
+                  </div>
+                </td>
+                <td className="py-6">
+                  <div className="flex justify-center">
+                    <button
+                      onClick={() => handleToggleFeeStatus(s)}
+                      className={`px-3 py-1 rounded-lg font-black uppercase text-xs tracking-widest transition-all shadow-cartoon-sm hover:-translate-y-1 active:translate-y-0 ${
+                        s.feesPaid
+                          ? "bg-accent-green text-white border-2 border-black"
+                          : "bg-accent-red text-white border-2 border-black"
+                      }`}
+                    >
+                      {s.feesPaid ? "Paid 💰" : "Unpaid ❌"}
+                    </button>
                   </div>
                 </td>
                 <td className="py-6 text-right">
